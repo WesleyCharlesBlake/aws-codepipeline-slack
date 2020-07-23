@@ -25,7 +25,7 @@ def find_channel(name):
         print("conversations.list")
         logger.error("error: {}".format(r['error']))
     else:
-        for ch in r['conversations']:
+        for ch in r['channels']:
             if ch['name'] == name:
                 CHANNEL_CACHE[name] = ch['id']
                 return ch['id']
