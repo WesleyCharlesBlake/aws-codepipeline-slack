@@ -107,6 +107,5 @@ def send_msg(ch, attachments):
 def update_msg(ch, ts, attachments):
     r = client.chat_update(channel=ch, 
                            ts=ts, 
-                           attachments=attachments
-                           )    
+                           attachments=attachments)    
     return r
