@@ -1,14 +1,16 @@
 import json
 import logging
 import os
+from pydoc import cli
 
-from slackclient import SlackClient
+from slack_sdk import WebClient
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-sc = SlackClient(os.getenv("SLACK_TOKEN"))
-sc_bot = SlackClient(os.getenv("SLACK_BOT_TOKEN"))
+slack_bot_token = os.getenv("SLACK_BOT_TOKEN")
+client = WebClient(token=slack_bot_token)
+
 SLACK_CHANNEL = os.getenv("SLACK_CHANNEL", "deployments")
 SLACK_BOT_NAME = os.getenv("SLACK_BOT_NAME", "BuildBot")
 SLACK_BOT_ICON = os.getenv("SLACK_BOT_ICON", ":robot_face:")
@@ -20,7 +22,7 @@ def find_channel(name):
     if name in CHANNEL_CACHE:
         return CHANNEL_CACHE[name]
 
-    r = sc.api_call("conversations.list", exclude_archived=1)
+    r = client.conversations_list(exclude_archived=1)
     if 'error' in r:
         print("conversations.list")
         logger.error("error: {}".format(r['error']))
@@ -34,7 +36,7 @@ def find_channel(name):
 
 
 def find_msg(ch):
-    return sc.api_call('conversations.history', channel=ch)
+    return client.conversations_history(channel=ch)
 
 
 def find_my_messages(ch_name, user_name=SLACK_BOT_NAME):
@@ -95,21 +97,16 @@ def post_build_msg(msgBuilder):
 
 
 def send_msg(ch, attachments):
-    r = sc_bot.api_call("chat.postMessage",
-                        channel=ch,
-                        icon_emoji=SLACK_BOT_ICON,
-                        username=SLACK_BOT_NAME,
-                        attachments=attachments
-                        )
+    r = client.chat_postMessage(channel=ch, 
+                                icon_emoji=SLACK_BOT_ICON, 
+                                username=SLACK_BOT_NAME, 
+                                attachments=attachments)
     return r
 
 
 def update_msg(ch, ts, attachments):
-    r = sc_bot.api_call('chat.update',
-                        channel=ch,
-                        ts=ts,
-                        icon_emoji=SLACK_BOT_ICON,
-                        username=SLACK_BOT_NAME,
-                        attachments=attachments
-                        )
+    r = client.chat_update(channel=ch, 
+                           ts=ts, 
+                           attachments=attachments
+                           )    
     return r
